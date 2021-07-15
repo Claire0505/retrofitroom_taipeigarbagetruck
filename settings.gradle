@@ -1,0 +1,2 @@
+rootProject.name = "RetrofitRoom_TaipeiGarbageTruck"
+include ':app'
