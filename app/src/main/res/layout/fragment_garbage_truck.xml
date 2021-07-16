@@ -2,18 +2,27 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- 使用數據邦定對佈局進行膨脹，將綁定生命週期所有者，
+       任何 LiveData 在數據綁定都將自動觀察到任何更改，並且將 UI 相應地更新
+       -->
+    <data>
+        <variable
+            name="viewModel"
+            type="com.example.retrofitroom_taipeigarbagetruck.ui.GarbageTruckViewModel" />
+    </data>
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.GarbageTruckFragment">
 
-        <!-- TODO: Update blank fragment layout -->
+
         <TextView
             android:layout_gravity="center"
             android:textSize="28sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/hello_blank_fragment" />
+            android:text="@{viewModel.response}" />
 
     </FrameLayout>
 </layout>
