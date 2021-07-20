@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckApi
+import com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckProperty
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -32,16 +33,18 @@ class GarbageTruckViewModel : ViewModel() {
      */
     private fun getGarbageTruckProperties(){
         GarbageTruckApi.retrofitService.getProperties().enqueue(
-            object : Callback<String> {
-                override fun onResponse(call: Call<String>, response: Response<String>) {
-                   _response.value = response.body()
-                }
+           object: Callback<List<GarbageTruckProperty>> {
+               override fun onResponse(
+                   call: Call<List<GarbageTruckProperty>>,
+                   response: Response<List<GarbageTruckProperty>>
+               ) {
+                   _response.value = "Success ${response.body()?.size} GarbageTruck properties retrieved"
+               }
 
-                override fun onFailure(call: Call<String>, t: Throwable) {
-                    _response.value = "Failure: " + t.message
-                }
-
-            }
+               override fun onFailure(call: Call<List<GarbageTruckProperty>>, t: Throwable) {
+                   _response.value = "Failure: " + t.message
+               }
+           }
         )
     }
 }

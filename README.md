@@ -148,3 +148,238 @@ class GarbageTruckViewModel : ViewModel() {
 ```
 6. 編譯並運行應用程序。在此應用程序的當前版本中，看到的畫面顯示只是啟動器響應 "Set the Garbage Truck API Response here!"
 ---
+# 使用 Retrofit 連接到 Web 服務
+來自 Web 服務的響應通常使用JSON 進行格式化， JSON是一種用於表示結構化數據的交換格式。簡短的解釋是 JSON 對像是鍵值 key-value 的集合，有時稱為字典 (dirctionary)、哈希映射(hash map)或關聯數組(associative array)。JSON 對象的集合是一個 JSON 數組。該數組是您從 Web 服務返回的響應。
+
+要將此 JSON 數據導入應用程序，應用程序需要與服務器建立網絡連接，與該服務器通信，然後接收 JSON 響應數據並將其解析為應用程序可以使用的格式。
+
+## 第 1 步：向 Gradle 添加 Retrofit 依賴項
+```kotlin
+// 應用程序需要與服務器建立網絡連接，將使用名為 Retrofit 庫來建立連接。
+    def retrofit_version = "2.9.0"
+    implementation
+    ("com.squareup.retrofit2:retrofit:$retrofit_version")
+    implementation 
+    ("com.squareup.retrofit2:converter-scalars:$retrofit_version")
+ ```  
+## 第 2 步：實施 GarbageTruckApiService
+
+Retrofit 根據來自 Web 服務的內容為應用程序創建網絡 API。它從 Web 服務獲取數據並通過一個單獨的轉換器庫路由它，該轉換器庫知道如何解碼數據並以有用對象的形式返回它。Retrofit 包括對流行的 Web 數據格式（如 XML 和 JSON）的內置支持。Retrofit 最終會為您創建大部​​分網絡層，包括關鍵細節，例如在後台線程上運行請求。
+
+1. 創建 app/java/network/GarbageTruckApiService.kt 
+現在該文件只包含一件事：Web 服務的基本 URL 的常量。
+```kotlin
+private const val BASE_URL = "https://www.dropbox.com/s/o75vb07ujb3r1xb/Taipei_GarbageTruck_2021.json?dl=1"
+```
+2. 在該常量下方，使用 Retrofit 構建器創建一個 Retrofit 對象。導入retrofit2.Retrofit 並在需要時 
+retrofit2.converter.scalarsScalarsConverterFactory
+
+```kotlin
+/**
+ * https://www.dropbox.com/s/o75vb07ujb3r1xb/Taipei_GarbageTruck_2021.json?dl=1
+ *
+ * 使用 Retrofit2 進行 API 解析時出現錯誤
+ * java.lang.IllegalArgumentException: baseUrl 必須以 / 結尾
+ * 需將網址分成兩部分  BASE_URL = "https://www.dropbox.com/ 和 KEY = "Taipei_GarbageTruck_2021.json?dl=1"
+ * 然後像這樣在 GET 註釋中添加  @GET("s/o75vb07ujb3r1xb/"+ KEY)
+ */
+private const val BASE_URL = "https://www.dropbox.com/"
+private const val KEY = "Taipei_GarbageTruck_2021.json?dl=1"
+ ```   
+Retrofit 至少需要兩個可用的東西來構建 Web 服務 API：Web 服務的基本 URI 和轉換器工廠。轉換器告訴 Retrofit 如何處理它從 Web 服務返回的數據。在這種情況下，您希望 Retrofit 從 Web 服務獲取 JSON 響應，並將其作為String. Retrofit 具有ScalarsConverter支持字符串和其他原始類型的 ，因此您可以addConverterFactory()使用ScalarsConverterFactory. 最後，您調用build()以創建 Retrofit 對象。
+
+3. 在調用 Retrofit 構建器的正下方，定義一個接口，該接口定義 Retrofit 如何使用 HTTP 請求與 Web 服務器通信。導入retrofit2.http.GET並在需要時 retrofit2.Call。
+
+```kotlin
+interface GarbageTruckApiService {
+    @GET("s/o75vb07ujb3r1xb/"+ KEY)
+    fun getProperties():
+            Call<String>
+}
+```
+現在的目標是從 Web 服務獲取 JSON 響應字符串，您只需要一種方法即可：getProperties(). 要告訴 Retrofit 此方法應該做什麼，請使用@GET註釋並指定該 Web 服務方法的路徑或端點。
+在這種情況下，端點稱為 (s/o75vb07ujb3r1xb/"+ KEY)。
+
+調用該getProperties()方法時，Retrofit 將端點附加 
+(s/o75vb07ujb3r1xb/"+ KEY)到基本 URL（您在 Retrofit 構建器中定義），並創建一個Call對象。該對Call像用於啟動請求。
+
+4. 在GarbageTruckApiService接口下方，定義一個公共對象，
+調用它GarbageTruckApi來初始化 Retrofit 服務。
+
+```kotlin
+object  GarbageTruckApi {
+    val retrofitService : GarbageTruckApiService by lazy {
+        retrofit.create(GarbageTruckApiService::class.java)
+    }
+}
+```
+Retrofit.create()方法使用 GarbageTruckApi interface創建 Retrofit 服務本身。由於此調用的計算成本很高，因此您可以lazy初始化 Retrofit 服務。並且由於應用程序只需要一個 Retrofit 服務實例，您可以使用一個名為 的公共對象將該服務公開給應用程序的其餘部分。現在一旦所有設置完成，每次您的應用程序調用 GarbageTruckApi.retrofitService，它都會獲得一個實現GarbageTruckApiService.
+
+## 第三步：在 GarbageTruckViewModel中調用web服務
+1. 打開 GarbageTruckViewModel.kt。向下滾動到getGarbageTruckProperties()方法
+2. 刪除_response.value = "Set the Mars API Response here!"。
+
+3. 在裡面getGarbageTruckProperties()，添加如下所示的代碼。
+import retrofit2.Callback並在需要時
+import com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckApi。
+
+該GarbageTruckApi.retrofitService.getProperties()方法返回一個Call對象。然後您可以調用該enqueue()對像以在後台線程上啟動網絡請求。
+
+```kotlin
+private fun getGarbageTruckProperties(){
+        GarbageTruckApi.retrofitService.getProperties().enqueue(
+            object : Callback<String> {
+                override fun onResponse(call: Call<String>, response: Response<String>) {
+                   _response.value = response.body()
+                }
+
+                override fun onFailure(call: Call<String>, t: Throwable) {
+                    _response.value = "Failure: " + t.message
+                }
+
+            }
+        )
+    }
+ ```  
+ ## 第四步：定義 Internet 權限
+  打開app/manifests/AndroidManifest.xml。
+  在 <application標籤>之前添加這一行：
+  ```kotlin
+  <uses-permission android:name="android.permission.INTERNET" />
+  ```
+  再次編譯並運行應用程序。如果您的互聯網連接一切正常，您會看到包含 GarbageTruck Property 數據的 JSON 文本。
+  
+  ---
+  # 用 Moshi 解析 JSON 響應
+
+  現在您從服務獲得 JSON 響應，但有一個名為Moshi的庫 ，它是一個 Android JSON 解析器，可將 JSON 字符串轉換為 Kotlin 對象。Retrofit 有一個可與 Moshi 配合使用的轉換器，因此它是一個非常適合您的庫。
+  
+## 第一步：添加Moshi庫依賴
+1. 打開build.gradle (Module: app)。
+```kotlin
+ // moshi for parsing the JSON format
+    def moshi_version = "1.12.0"
+    implementation
+     ("com.squareup.moshi:moshi-kotlin:$moshi_version")
+````    
+2. 在dependencies塊中找到 Retrofit 標量轉換器的行：
+implementation "com.squareup.retrofit2:converter-scalars:$version_retrofit"
+
+3. 更改這些行以使用converter-moshi：
+```kotlin
+ implementation 
+ ("com.squareup.retrofit2:converter-moshi:$retrofit_version")
+ ```
+ 4. 單擊立即同步以使用新的依賴項重建項目。
+
+ ## 實現 GarbageTruckProperty 數據類
+ 從 Web 服務獲得的 JSON 響應的示例條目如下所示：
+ https://www.dropbox.com/s/o75vb07ujb3r1xb/Taipei_GarbageTruck_2021.json?dl=1
+
+ ```json
+ [
+  {
+    "Admin_District": "中山區",
+    "Village": "力行里",
+    "Branch": "長安分隊",
+    "Bra_num": "100-021",
+    "Car_num": "119-BQ",
+    "Route": "長安-3",
+    "Train_num": "第1車",
+    "Arrival_Time": 1630,
+    "Departure_Time": 1638,
+    "Location": "臺北市中山區建國北路一段69號前",
+    "Longitude": 121.5369444,
+    "Latitude": 25.05111111
+  },{...}]
+  
+  ```
+上面顯示的 JSON 響應是一個數組，由 [ ] 方括號表示。
+該數組包含用 { } 花括號括起來的 JSON 對象。每個對像都包含一組名稱-值對，以 : 冒號分隔。名稱用 " " 引號括起來。值可以是數字、字符串和布爾值，也可以是其他對像或數組。如果一個值是一個字符串，它也被引號包圍。
+
+Moshi 解析此 JSON 數據並將其轉換為 Kotlin 對象。為此，它需要有一個 Kotlin 數據類來存儲解析結果，因此下一步是創建該類。
+1. 點選 app/java/network/ -> 按右鍵選 new ->
+ kotlin data class File from Json 功具轉換，將要解析的 Json 資料，
+ 全部貼到上面去，它會幫你自動轉成定義的：
+
+ ```kotlin
+ data class GarbageTruckProperty(
+    val Admin_District: String,
+    val Arrival_Time: Int,
+    val Bra_num: String,
+    val Branch: String,
+    val Car_num: String,
+    val Departure_Time: Int,
+    val Latitude: Double,
+    val Location: String,
+    val Longitude: Double,
+    val Route: String,
+    val Train_num: String,
+    val Village: String
+)
+```
+## 第三步：更新GarbageTruckApiService 和 GarbageTruckViewModel
+
+隨著GarbageTruckProperty就位數據類，現在可以更新網絡API，並ViewModel以包括Moshi data。
+1. 打開network/GarbageTruckApiService.kt。會看到ScalarsConverterFactory. 這是因為您在步驟 1 中所做的 Retrofit 依賴項更改。您很快就會修復這些錯誤。
+
+2. 在文件頂部，就在 Retrofit 構建器之前，添加以下代碼以創建 Moshi 實例。導入com.squareup.moshi.Moshi並在需要時 import 
+com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory。
+
+```kotlin
+private val moshi = Moshi.Builder()
+    .add(KotlinJsonAdapterFactory())
+    .build()
+```
+與您使用 Retrofit 所做的類似，這裡您moshi使用 Moshi 構建器創建一個對象。為了讓 Moshi 的註解與 Kotlin 一起正常工作，添加KotlinJsonAdapterFactory，然後調用build()。
+
+3. 將 Retrofit 構建器更改為使用MoshiConverterFactory代替ScalarConverterFactory，並傳入moshi您剛剛創建的實例。retrofit2.converter.moshi.MoshiConverterFactory請求時導入。
+
+```kotlin
+private val retrofit = Retrofit.Builder()
+   .addConverterFactory(MoshiConverterFactory.create(moshi))
+   .baseUrl(BASE_URL)
+   .build()
+ ```
+4. 也刪除import retrofit2.converter.scalars.ScalarsConverterFactory
+
+5. 更新GarbageTruckApiService 接口以讓 Retrofit 返回一個MarsProperty對象列表，而不是返回Call< String >.
+```kotlin
+interface GarbageTruckApiService {
+    @GET("s/o75vb07ujb3r1xb/"+ KEY)
+    fun getProperties():
+            Call<List<GarbageTruckProperty>>
+}
+```
+6. 打開GarbageTruckViewModel.kt。向下滾動到調用getProperties().enqueue()的getMarsRealEstateProperties()方法。
+
+7. 將參數更改為enqueue()fromCallback< String >
+到Callback< List< GarbageTruckProperty>> 。
+請求時 import com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckProperty
+```kotlin
+GarbageTruckApi.retrofitService.getProperties().enqueue(
+           object: Callback<List<GarbageTruckProperty>> {
+```
+8. 在中onFailure() 和 onResponse()中，將參數從更改Call< String >
+為 Call< List< GarbageTruckProperty > >
+
+9. 在onResponse()，將現有的分配替換為_response.value如下所示的分配。因為response.body()現在是一個GarbageTruckProperty對象列表，該列表的大小是被解析的屬性數。此響應消息將打印該數量的屬性：
+
+```kotlin
+ GarbageTruckApi.retrofitService.getProperties().enqueue(
+           object: Callback<List<GarbageTruckProperty>> {
+               override fun onResponse(
+                   call: Call<List<GarbageTruckProperty>>,
+                   response: Response<List<GarbageTruckProperty>>
+               ) {
+                   _response.value = "Success ${response.body()?.size} GarbageTruck properties retrieved"
+               }
+
+               override fun onFailure(call: Call<List<GarbageTruckProperty>>, t: Throwable) {
+                   _response.value = "Failure: " + t.message
+               }
+           }
+        )
+```
+---
+
