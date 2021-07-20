@@ -3,8 +3,10 @@ package com.example.retrofitroom_taipeigarbagetruck.ui
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckApi
 import com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckProperty
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -32,19 +34,13 @@ class GarbageTruckViewModel : ViewModel() {
      * Sets the value of the status LiveData to the Garbage Truck API status.
      */
     private fun getGarbageTruckProperties(){
-        GarbageTruckApi.retrofitService.getProperties().enqueue(
-           object: Callback<List<GarbageTruckProperty>> {
-               override fun onResponse(
-                   call: Call<List<GarbageTruckProperty>>,
-                   response: Response<List<GarbageTruckProperty>>
-               ) {
-                   _response.value = "Success ${response.body()?.size} GarbageTruck properties retrieved"
-               }
-
-               override fun onFailure(call: Call<List<GarbageTruckProperty>>, t: Throwable) {
-                   _response.value = "Failure: " + t.message
-               }
-           }
-        )
+        viewModelScope.launch {
+            try {
+                val listResult = GarbageTruckApi.retrofitService.getProperties()
+                _response.value = "Success: ${listResult.size} GarbageTruck properties retrieved"
+            } catch (e: Exception){
+                _response.value = "Failure: ${e.message}"
+            }
+        }
     }
 }

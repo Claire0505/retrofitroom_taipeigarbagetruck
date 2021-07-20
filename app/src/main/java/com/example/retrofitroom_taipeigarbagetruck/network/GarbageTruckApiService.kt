@@ -28,13 +28,12 @@ private val retrofit = Retrofit.Builder()
     .build()
 
 interface GarbageTruckApiService {
-    @GET("s/o75vb07ujb3r1xb/"+ KEY)
-    fun getProperties():
-            Call<List<GarbageTruckProperty>>
+    @GET("s/o75vb07ujb3r1xb/" + KEY)
+    suspend fun getProperties(): List<GarbageTruckProperty>
 }
 
-object  GarbageTruckApi {
-    val retrofitService : GarbageTruckApiService by lazy {
+object GarbageTruckApi {
+    val retrofitService: GarbageTruckApiService by lazy {
         retrofit.create(GarbageTruckApiService::class.java)
     }
 }

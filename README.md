@@ -250,7 +250,7 @@ private fun getGarbageTruckProperties(){
   再次編譯並運行應用程序。如果您的互聯網連接一切正常，您會看到包含 GarbageTruck Property 數據的 JSON 文本。
   
   ---
-  # 用 Moshi 解析 JSON 響應
+  # 使用 Moshi 解析 JSON 響應
 
   現在您從服務獲得 JSON 響應，但有一個名為Moshi的庫 ，它是一個 Android JSON 解析器，可將 JSON 字符串轉換為 Kotlin 對象。Retrofit 有一個可與 Moshi 配合使用的轉換器，因此它是一個非常適合您的庫。
   
@@ -383,3 +383,43 @@ GarbageTruckApi.retrofitService.getProperties().enqueue(
 ```
 ---
 
+# 在 Retrofit 中使用協程 (Use coroutines with Retrofit)
+
+現在 Retrofit API 服務正在運行，但它使用Call< List< GarbageTruckProperty > >一個回調和兩個您必須實現的回調方法。
+一種方法處理成功，另一種方法處理失敗，失敗結果報告異常。
+
+如果您可以使用具有異常處理的協程而不是使用回調，您的代碼將更高效且更易於閱讀。在此任務中，您將轉換網絡服務並ViewModel使用協程。
+
+## 第一步：更新GarbageTruckApiService和 GarbageTruckViewModel
+1. 在 中GarbageTruckApiService，做getProperties()一個掛起函數。
+更改Call< List< GarbageTruckProperty > >為 List< MarsProperty >。該getProperties()方法如下所示：
+```kotlin
+interface GarbageTruckApiService {
+    @GET("s/o75vb07ujb3r1xb/" + KEY)
+    suspend fun getProperties(): List<GarbageTruckProperty>
+}
+```
+2. 在GarbageTruckViewModel.kt文件中，刪除getMarsRealEstateProperties()裡面的所有代碼。
+您將在此處使用協程，而不是調用enqueue()和onFailure()和onResponse()回調。
+3. 在getMarsRealEstateProperties()裡面，使用啟動協程viewModelScope. ViewModelScope是為ViewModel應用程序中的每個定義的內置協程範圍。如果ViewModel清除了，則在此範圍內啟動的任何協程都會自動取消。
+4. 在啟動塊內，添加一個try/catch塊來處理異常
+5. 裡面try {} 塊，叫getProperties()上retrofitService對象：調用getProperties()從MarsApi服務創建並啟動在後台線程網絡通話。
+6. 同樣在try {}塊內，更新成功響應的響應消息
+7. 在catch {}塊內，處理失敗響應
+
+完整的getMarsRealEstateProperties()方法現在看起來像這樣：
+```kotlin
+private fun getGarbageTruckProperties(){
+        viewModelScope.launch {
+            try {
+                val listResult = GarbageTruckApi.retrofitService.getProperties()
+                _response.value = "Success: ${listResult.size} GarbageTruck properties retrieved"
+            } catch (e: Exception){
+                _response.value = "Failure: ${e.message}"
+            }
+        }
+    }
+```
+8. 編譯並運行應用程序。這次您得到與上一個任務相同的結果（屬性數量的報告），但代碼和錯誤處理更直接。
+--- 
+   
