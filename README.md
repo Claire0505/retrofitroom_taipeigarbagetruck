@@ -422,4 +422,25 @@ private fun getGarbageTruckProperties(){
 ```
 8. 編譯並運行應用程序。這次您得到與上一個任務相同的結果（屬性數量的報告），但代碼和錯誤處理更直接。
 --- 
-   
+# 從互聯連獲取數據總結
+ REST 網絡服務
+* 一個Web服務是在使您的應用程序發出請求和找回數據互聯網提供基於軟件的功能。
+
+* 常見的 Web 服務使用 REST架構。提供 REST 架構的 Web 服務稱為RESTful服務。RESTful Web 服務是使用標準 Web 組件和協議構建的。
+
+* 您可以通過 URI 以標準化方式向 REST Web 服務發出請求。
+* 要使用 Web 服務，應用程序必須建立網絡連接並與服務通信。然後應用程序必須接收響應數據並將其解析為應用程序可以使用的格式。
+
+* 該 Retorift 庫是一個客戶端庫，使您的應用程序，使請求到REST Web服務。
+* 使用轉換器告訴 Retrofit 如何處理它發送到 Web 服務並從 Web 服務返回的數據。例如，ScalarsConverter轉換器將 Web 服務數據視為一個String或其他原語。
+* 要使您的應用能夠連接到互聯網，請"android.permission.INTERNET"在 Android 清單中添加權限。
+---
+JSON 解析
+* 來自 Web 服務的響應通常採用 JSON格式，這是一種用於表示結構化數據的常見交換格式。
+* JSON 對像是鍵值對的集合。該集合有時稱為dictionary、hash map或關聯數組。
+* JSON 對象的集合是一個 JSON 數組。您從 Web 服務獲得一個 JSON 數組作為響應。
+* 鍵值對中的鍵用引號括起來。值可以是數字或字符串。字符串也被引號包圍。
+* 該 moshi 是一個Android JSON解析器，轉換一個JSON字符串對象kotlin。Retrofit 有一個可與 Moshi 配合使用的轉換器。
+* Moshi 將 JSON 響應中的鍵與數據對像中具有相同名稱的屬性進行匹配。
+* 要為鍵使用不同的屬性名稱，請使用@Json註釋和 JSON 鍵名稱對該屬性進行註釋。
+---
