@@ -443,4 +443,363 @@ JSON 解析
 * 該 moshi 是一個Android JSON解析器，轉換一個JSON字符串對象kotlin。Retrofit 有一個可與 Moshi 配合使用的轉換器。
 * Moshi 將 JSON 響應中的鍵與數據對像中具有相同名稱的屬性進行匹配。
 * 要為鍵使用不同的屬性名稱，請使用@Json註釋和 JSON 鍵名稱對該屬性進行註釋。
+
+>參考教學：[Android Kotlin 基礎：8.1 從互聯網獲取數據](https://developer.android.com/codelabs/kotlin-android-training-internet-data?index=..%2F..android-kotlin-fundamentals#0)
 ---
+# 改從 viewModel顯示單一清運資料 (測試)
+## 第 1 步：更新視圖模型
+1. 打開 GarbageTruckViewModel.kt。在LiveDatafor下方，
+為_response單個GarbageTruckProperty對象添加內部（可變）和外部（不可變）實時數據。
+```kotlin
+ // 為_response單個對象添加內部（可變）和外部（不可變）實時數據。
+    private val _property = 
+    MutableLiveData<GarbageTruckProperty>()
+
+    val property: LiveData<GarbageTruckProperty>
+    get() = _property
+ ```
+ 2. 在getMarsRealEstateProperties()方法中，找到try/catch {}設置_response.value為屬性數量的塊內的行。
+ 在try/catch. 如果GarbageTruckProperty對象可用，此測試將值設置_property LiveData為 中的第一個屬性listResult。
+ ```kotlin
+    if (listResult.isNotEmpty()){
+        _property.value = listResult[0]
+    } 
+ ```
+ 3. 打開res/layout/fragment_garbage_truck.xml。在< TextView>元素中，更改android:text綁定
+ ```kotlin
+ android:text="@{viewModel.property.location}"  
+ ```
+ 4. 運行應用程序。該TextView會顯示第一個地址。  
+ ---
+ # 使用 RecyclerView 顯示清運資料
+ ## 第 1 步：更新視圖模型
+ 1. 打開GarbageTruckViewModel.kt。
+ 2. 將_property改為列表對象
+ ```kotlin
+    private val _property = MutableLiveData<List<GarbageTruckProperty>>()
+
+    val property: LiveData<List<GarbageTruckProperty>>
+    get() = _property
+ ```
+ 3. 向下滾動到getMarsRealEstateProperties()方法。在try {}塊內，用下面顯示的行替換您在上一個任務中添加的整個測試。
+
+ ```kotlin
+  viewModelScope.launch {
+     try {
+        _property.value = GarbageTruckApi.retrofitService.getProperties()
+
+     } catch (e: Exception){
+        _response.value = "Failure: ${e.message}"
+     }
+}
+```
+## 第 2 步：更新佈局和片段
+下一步是更改應用程序的佈局和片段以使用 recyclerView和 LinearLayoutManager，而不是單個圖像視圖。
+
+1. 創建res/layout/garbage_truck_item.xml。
+將數據綁定並將變量重命名為"garbageTruckProperty"。
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="garbageTruckProperty"
+            type="com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckProperty" />
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="5dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tv_Admin_District"
+                        android:padding="2dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{garbageTruckProperty.admin_District}"
+                        tools:text="中山區" />
+
+                    <TextView
+                        android:id="@+id/tv_Village"
+                        android:padding="2dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{garbageTruckProperty.village}"
+                        tools:text="力行里" />
+
+                    <TextView
+                        android:id="@+id/tv_Branch"
+                        android:padding="2dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{garbageTruckProperty.branch}"
+                        tools:text="長安分隊" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="3dp"
+                    android:orientation="horizontal"
+                    android:visibility="invisible">
+
+                    <TextView
+                        android:id="@+id/tv_latitude"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{garbageTruckProperty.latitude}"
+                        tools:text="25.05111111" />
+
+                    <TextView
+                        android:id="@+id/tv_longitude"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{garbageTruckProperty.longitude}"
+                        tools:text="121.5369444" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/textView3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/arrival_time"
+                        android:textColor="@color/gray" />
+
+                    <TextView
+                        android:id="@+id/tv_Arrival_Time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{garbageTruckProperty.arrival_Time}"
+                        android:textColor="@color/green"
+                        android:textSize="16sp"
+                        tools:text="1630" />
+
+                    <TextView
+                        android:id="@+id/textView5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/departure_time"
+                        android:textColor="@color/gray" />
+
+                    <TextView
+                        android:id="@+id/tv_Departure_Time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{garbageTruckProperty.departure_Time}"
+                        android:textColor="@color/green"
+                        android:textSize="16sp"
+                        tools:text="1638" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp">
+
+                    <TextView
+                        android:id="@+id/tv_Location"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@{garbageTruckProperty.location}"
+                        android:textColor="@color/gray"
+                        tools:text="臺北市中山區建國北路一段69號前" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </FrameLayout>
+</layout>
+```
+2. 打開res/layout/fragment_garbage_truck.xml。<br/>刪除整個< TextView>元素。
+3. 改為<RecyclerView >添加此元素，它使用 LinearLayoutManager和garbage_truck_item單個項目的佈局：.
+```xml
+ <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="4dp"
+    tools:context=".ui.GarbageTruckFragment">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layoutManager=
+        "androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:listData="@{viewModel.property}"
+        tools:listitem="@layout/garbage_truck_item" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+``` 
+## 第 3 步：添加GarbageTruckAdapter適配器                
+
+1. 創建GarbageTruckAdapter.kt，構造函數參數如下所示。<br/>
+在GarbageTruckAdapter類擴展ListAdapter，它的構造需要列表類型<br/>
+觀點持有者和DiffUtil.ItemCallback實施。
+
+需要時導入androidx.recyclerview.widget.ListAdapter
+>ListAdapter
+ListAdapter 是谷歌在 2018 新增的一個用來優化 RecyclerView.Adapter 的類，能夠用更簡潔的代碼完成 Adapter，並且加入了 DiffUtil 這個輔助類，優化了 RecyclerView 的效能。
+```kotlin
+class GarbageTruckAdapter : ListAdapter<GarbageTruckProperty
+        , GarbageTruckAdapter.GarbageTruckViewHolder>(DiffCallback) {
+```
+DiffCallback 為自定義的一個 compaion object DiffCallback
+
+2. 單擊GarbageTruckAdapter類中的任意位置按Control+i
+以實現ListAdapter方法，<br/>
+即onCreateViewHolder()和onBindViewHolder()。
+
+```kotlin
+/**
+ * This class implements a [RecyclerView] [ListAdapter] which uses Data Binding to present [List]
+ * data, including computing diffs between lists.
+ */
+class GarbageTruckAdapter : ListAdapter<GarbageTruckProperty
+        , GarbageTruckAdapter.GarbageTruckViewHolder>(DiffCallback) {
+
+     /**
+     *  需要將 GarbageTruckItemBinding 綁定  GarbageTruckProperty 到佈局的變量，
+     *  因此將變量傳遞到 GarbageTruckViewHolder. 因為基ViewHolder類在其構造函數中需要一個視圖，
+     *  所以將綁定根視圖傳遞給它。 binding.root
+     */
+    class GarbageTruckViewHolder(private var binding: GarbageTruckItemBinding):
+        RecyclerView.ViewHolder(binding.root){
+
+            fun bind(garbageTruckProperty: GarbageTruckProperty){
+                binding.garbageTruckProperty = garbageTruckProperty
+
+                // 這很重要，因為它強制數據綁定立即執行
+                // 這允許 RecyclerView 進行正確的視圖大小測量
+                binding.executePendingBindings()
+            }
+
+    }
+
+    /**
+     * Create new [RecyclerView] item views (invoked by the layout manager)
+     *
+     * You have to supply the recycler as the root to the inflate method,
+     * so that the inflated view gets the correct layout parameters from the parent
+     * 必須將 recycler 作為根 root提供給 inflate 方法，以便膨脹的視圖從父視圖獲取正確的佈局參數
+     *
+     * You have to set attachToRoot to false, because the recycler view handles the attaching.
+     * 必須將 attachToRoot 設置為 false，因為回收站視圖會處理附加操作。
+     */
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GarbageTruckViewHolder {
+
+        val layoutInflater = LayoutInflater.from(parent.context)
+        val binding = GarbageTruckItemBinding.inflate(layoutInflater, parent, false)
+
+        return GarbageTruckViewHolder(binding)
+    }
+
+    /**
+     * Replaces the contents of a view (invoked by the layout manager)
+     */
+    override fun onBindViewHolder(holder: GarbageTruckViewHolder, position: Int) {
+        val garbageTruckProperty = getItem(position)
+        holder.bind(garbageTruckProperty)
+    }
+ ```   
+
+3. 在 GarbageTruckAdapter 類定義的末尾，在您剛剛添加的方法之後，為添加一個伴隨對象定義DiffCallback，如下所示。
+
+androidx.recyclerview.widget.DiffUtil請求時導入。<br/>
+該DiffCallback對象擴展DiffUtil.ItemCallback與compare-對象的類型GarbageTruckProperty。
+```kotlin
+ /**
+     * Allows the RecyclerView to determine which items have changed when the [List] of [GarbageTruckProperty]
+     * has been updated.
+     */
+   companion object DiffCallback : DiffUtil.ItemCallback<GarbageTruckProperty>() {
+        // 檢查兩個物件是否是同一個對象，如果是，則不做任何操作，如果不是，則更新這個 Item。
+        override fun areItemsTheSame(
+            oldItem: GarbageTruckProperty,
+            newItem: GarbageTruckProperty
+        ): Boolean {
+            return oldItem === newItem
+        }
+        // 檢查成員變數是否一樣來判斷是否要做任何操作，這裡可以依需求自行更換其他成員變數。
+        override fun areContentsTheSame(
+            oldItem: GarbageTruckProperty,
+            newItem: GarbageTruckProperty
+        ): Boolean {
+            return oldItem.Admin_District == newItem.Admin_District
+
+        }
+    }
+ ```   
+ ## 第 4 步：Add the binding adapter and connect the parts
+ 最後，使用列表對象 BindingAdapter初始化。設置數據會導致數據綁定自動觀察對象列表。然後當列表改變時自動調用綁定適配
+
+ 1. 建立 BindingAdapters.kt <br/>
+ 綁定適配器是位於視圖和綁定數據之間的擴展方法，用於在數據更改時提供自定義行為。
+ 2. 在文件的末尾，添加一個bindRecyclerView()<br/>
+ 將RecyclerView 和 GarbageTruckProperty 對象列表作為參數的方法。使用@BindingAdapter.
+
+ ```kotlin
+/**
+ * 在bindRecyclerView()函數內部，強制轉換recyclerView.adapter為GarbageTruckAdapter，
+ * 並adapter.submitList()使用數據調用。這告訴RecyclerView新列表何時可用。
+ */
+@BindingAdapter("listData")
+fun bindRecyclerView(recyclerView: RecyclerView, data: List<GarbageTruckProperty>?){
+    val adapter = recyclerView.adapter as GarbageTruckAdapter
+    adapter.submitList(data)
+}
+```
+3. 打開res/layout/fragment_garbage_truck.xml。<br/>
+將 app:listData 屬性添加到RecyclerView元素 <br/>
+並將其設置為viewmodel.properties使用數據綁定。
+
+```kotlin
+ app:listData="@{viewModel.property}"
+```
+4. 打開 GarbageTruckFragment.kt。<br/>
+在onCreateView()，就在調用 之前setHasOptionsMenu()，將RecyclerView適配器初始化binding.recycler為一個新GarbageTruckAdapter對象。
+
+``` kotlin
+// Sets the adapter of the  recycler RecyclerView
+ binding.recycler.adapter = GarbageTruckAdapter()
+ ```
+ 5. 運行應用程序。會顯示到GarbageTruckProperty的 RecyclerView。
+ ---
+ 

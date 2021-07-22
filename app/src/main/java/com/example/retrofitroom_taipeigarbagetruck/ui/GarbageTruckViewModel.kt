@@ -22,6 +22,11 @@ class GarbageTruckViewModel : ViewModel() {
     val response: LiveData<String>
     get() = _response
 
+    // 為_response單個對象添加內部（可變）和外部（不可變）實時數據。
+    private val _property = MutableLiveData<List<GarbageTruckProperty>>()
+    val property: LiveData<List<GarbageTruckProperty>>
+    get() = _property
+
     /**
      * Call getGarbageTruckProperties() on init so we can display status immediately.
      * 在 init 上調用 getGarbageTruckProperties () 以便我們可以立即顯示狀態。
@@ -36,8 +41,9 @@ class GarbageTruckViewModel : ViewModel() {
     private fun getGarbageTruckProperties(){
         viewModelScope.launch {
             try {
-                val listResult = GarbageTruckApi.retrofitService.getProperties()
-                _response.value = "Success: ${listResult.size} GarbageTruck properties retrieved"
+                _property.value = GarbageTruckApi.retrofitService.getProperties()
+                _response.value = "Success: Mars properties retrieved"
+
             } catch (e: Exception){
                 _response.value = "Failure: ${e.message}"
             }

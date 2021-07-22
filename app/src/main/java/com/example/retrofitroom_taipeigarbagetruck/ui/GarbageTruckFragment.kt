@@ -45,6 +45,9 @@ class GarbageTruckFragment : Fragment() {
          */
         binding.viewModel = viewModel
 
+        // Sets the adapter of the  recycler RecyclerView
+        binding.recycler.adapter = GarbageTruckAdapter()
+
         return binding.root
 
     }

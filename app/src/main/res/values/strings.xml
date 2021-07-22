@@ -2,4 +2,6 @@
     <string name="app_name">RetrofitRoom_TaipeiGarbageTruck</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="arrival_time">抵達時間：</string>
+    <string name="departure_time">&#160;&#160;&#160;離開時間：</string>
 </resources>
