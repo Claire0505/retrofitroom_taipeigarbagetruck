@@ -11,16 +11,17 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// 在視圖模型中創建一個來表示 Web 請求的狀態。需要考慮三種狀態——加載、成功和失敗。
+enum class GarbageTruckApiStatus { LOADING, ERROR, DONE}
+
 class GarbageTruckViewModel : ViewModel() {
 
-    // The internal MutableLiveData String that stores the most recent response
-    // 存儲最近響應的內部 MutableLiveData 字符串
-    private val _response = MutableLiveData<String>()
+    // The internal MutableLiveData that stores the status of the most recent request
+    private val _status = MutableLiveData<GarbageTruckApiStatus>()
 
-    // The external immutable LiveData for the response String
-    // 響應字符串的外部不可變 LiveData
-    val response: LiveData<String>
-    get() = _response
+    // The external immutable LiveData for the request status
+    val status: LiveData<GarbageTruckApiStatus>
+    get() = _status
 
     // 為_response單個對象添加內部（可變）和外部（不可變）實時數據。
     private val _property = MutableLiveData<List<GarbageTruckProperty>>()
@@ -39,13 +40,16 @@ class GarbageTruckViewModel : ViewModel() {
      * Sets the value of the status LiveData to the Garbage Truck API status.
      */
     private fun getGarbageTruckProperties(){
-        viewModelScope.launch {
+        viewModelScope.launch{
+            _status.value = GarbageTruckApiStatus.LOADING
             try {
                 _property.value = GarbageTruckApi.retrofitService.getProperties()
-                _response.value = "Success: Mars properties retrieved"
+                _status.value = GarbageTruckApiStatus.DONE
 
-            } catch (e: Exception){
-                _response.value = "Failure: ${e.message}"
+            } catch (e: Exception) {
+                _status.value = GarbageTruckApiStatus.ERROR
+                // 將設置_property LiveData為空列表。這將清除RecyclerView.
+                _property.value = ArrayList()
             }
         }
     }

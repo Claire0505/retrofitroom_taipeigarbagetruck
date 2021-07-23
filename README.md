@@ -802,4 +802,93 @@ fun bindRecyclerView(recyclerView: RecyclerView, data: List<GarbageTruckProperty
  ```
  5. 運行應用程序。會顯示到GarbageTruckProperty的 RecyclerView。
  ---
- 
+ # 在RecyclerView中添加錯誤處理
+ 在此任務中，將添加基本的錯誤處理，以使用戶更好地了解發生了什麼。<br/>
+ 如果互聯網不可用，應用程序將顯示連接錯誤圖標。當應用程序正在獲取GarbageTruckProperty列表時，應用程序將顯示加載動畫。
+
+## 第 1 步：向視圖模型(viewModel)添加狀態
+ 1. 打開 GarbageTruckViewModel.kt。在文件頂部（導入之後，類定義之前），添加一個enum代表所有可用狀態：
+ ```kotlin
+ enum class MarsApiStatus { LOADING, ERROR, DONE }
+ ```
+ 2. 將_response 整個 GarbageTruckViewModel類中的<br/>
+ 內部和外部實時數據定義重命名為_status.
+ ```kotlin
+  // The internal MutableLiveData that stores the status of the most recent request
+    private val _status = MutableLiveData<GarbageTruckApiStatus>()
+
+    // The external immutable LiveData for the request status
+    val status: LiveData<GarbageTruckApiStatus>
+    get() = _status
+ ```
+ 3. 向下滾動到getGarbageTruckProperties()方法並更新_response到_status這裡。將"Success"字符串更改為 GarbageTruckApiStatus.DONE狀態，<br/>將"Failure"字符串更改為 GarbageTruckApiStatus.ERROR。  
+
+ 4. 將狀態設置 GarbageTruckApiStatus.LOADING為try{}塊之前。<br/>
+ 這是協程運行並且您正在等待數據時的初始狀態。
+
+ 5. 在catch {}塊中的錯誤狀態之後，將 設置_property LiveData為空列表。這將清除RecyclerView.
+
+ ```kotlin
+ private fun getGarbageTruckProperties(){
+        viewModelScope.launch{
+            _status.value = GarbageTruckApiStatus.LOADING
+            try {
+                _property.value = GarbageTruckApi.retrofitService.getProperties()
+                _status.value = GarbageTruckApiStatus.DONE
+
+            } catch (e: Exception) {
+                _status.value = GarbageTruckApiStatus.ERROR
+                // 將設置_property LiveData為空列表。這將清除RecyclerView.
+                _property.value = ArrayList()
+            }
+        }
+    }
+```
+## 第 2 步：為狀態ImageView添加一個綁定適配器
+在此步驟中，使用ImageView連接到數據綁定的 來顯示加載和錯誤狀態的圖標。<br/>當應用程序處於加載狀態或錯誤狀態時，ImageView應該是可見的。當應用程序加載完成後，ImageView應該是不可見的。
+
+1. 打開BindingAdapters.kt。添加一個名為的新綁定適配器bindStatus()，它將一個ImageView和一個GarbageTruckApiStatus值作為參數。
+2. when {}在bindStatus()方法內部添加一個在不同狀態之間切換的方法。
+
+3. 在when {}中，為加載狀態 (MarsApiStatus.LOADING)添加一個案例。<br/>對於此狀態，將設置ImageView為可見，並為其分配加載動畫。
+
+4. 為錯誤狀態添加一個案例，即GarbageTruckApiStatus.ERROR。<br/>
+與您為LOADING狀態所做的類似，將狀態設置ImageView為可見並重用連接錯誤可繪製對象。
+
+5. 為完成狀態添加一個案例，即GarbageTruckApiStatus.DONE. <br/>
+在這裡有一個成功的響應，所以關閉狀態的可見性ImageView以隱藏它。
+
+```kotlin
+@BindingAdapter("garbageTruckApiStatus")
+fun bindStatus(statusImageView: ImageView, status: GarbageTruckApiStatus?){
+    when (status) {
+        GarbageTruckApiStatus.LOADING -> {
+            statusImageView.visibility = View.VISIBLE
+            statusImageView.setImageResource(R.drawable.loading_animation)
+        }
+        GarbageTruckApiStatus.ERROR -> {
+            statusImageView.visibility = View.VISIBLE
+            statusImageView.setImageResource(R.drawable.ic_connection_error)
+        }
+        GarbageTruckApiStatus.DONE -> {
+            statusImageView.visibility = View.GONE
+        }
+    }
+}
+```
+## 第 3 步：在佈局中添加狀態 ImageView
+1. 打開 fragment_garbage_truck.xml。在RecyclerView元素下方，在 中ConstraintLayout，添加ImageView如下所示。
+
+這ImageView與RecyclerView. 但是，寬度和高度用於wrap_content使圖像居中，而不是拉伸圖像以填充視圖。還要注意app:garbageTruckApiStatus屬性，BindingAdapter當視圖模型中的狀態屬性更改時，視圖會調用您的屬性。
+```xml
+<ImageView
+    android:id="@+id/status_image"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:garbageTruckApiStatus="@{viewModel.status}" />
+```   
+2. 在模擬器或設備中打開飛行模式以模擬丟失的網絡連接。編譯並運行應用程序，注意到出現錯誤圖像。         
