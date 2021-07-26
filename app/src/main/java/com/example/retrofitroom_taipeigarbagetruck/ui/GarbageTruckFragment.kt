@@ -5,7 +5,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.example.retrofitroom_taipeigarbagetruck.R
 import com.example.retrofitroom_taipeigarbagetruck.databinding.FragmentGarbageTruckBinding
 
@@ -45,8 +47,22 @@ class GarbageTruckFragment : Fragment() {
          */
         binding.viewModel = viewModel
 
-        // Sets the adapter of the  recycler RecyclerView
-        binding.recycler.adapter = GarbageTruckAdapter()
+        // Sets the adapter of the recycler RecyclerView with clickHandler lambda that
+        // tells the viewModel when our property is clicked
+        binding.recycler.adapter = GarbageTruckAdapter(GarbageTruckAdapter.OnClickListener{
+            viewModel.displayPropertyDetails(it)
+        })
+
+        // Observe the navigateToSelectedProperty LiveData and Navigate when it isn't null
+        // After navigating, call displayPropertyDetailsComplete() so that the ViewModel is ready
+        // for another navigation event.
+        viewModel.navigateToSelectedProperty.observe(viewLifecycleOwner, Observer {
+            if (null != it){
+                this.findNavController().navigate(
+                    GarbageTruckFragmentDirections.actionToGarbageTruckDetailFragment(it))
+                viewModel.displayPropertyDetailsComplete()
+            }
+        })
 
         return binding.root
 

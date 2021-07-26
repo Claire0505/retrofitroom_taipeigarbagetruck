@@ -891,4 +891,337 @@ fun bindStatus(statusImageView: ImageView, status: GarbageTruckApiStatus?){
     app:layout_constraintTop_toTopOf="parent"
     app:garbageTruckApiStatus="@{viewModel.status}" />
 ```   
-2. 在模擬器或設備中打開飛行模式以模擬丟失的網絡連接。編譯並運行應用程序，注意到出現錯誤圖像。         
+2. 在模擬器或設備中打開飛行模式以模擬丟失的網絡連接。編譯並運行應用程序，注意到出現錯誤圖像。
+---
+
+# 創建詳細頁面並設置導航 <br/>Create a detail page and set up navigation
+
+## 第 1步 ：Create the detail view model and update detail layout
+1. 創建 GarbageTruckDetailFragemet.kt 詳細頁面，並設置<br/>
+navigation 導航
+
+2. 打開detail/GarbageTruckViewModel.kt。
+```kotlin
+class GarbageTruckDetailViewModel(garbageTruckProperty: GarbageTruckProperty,app: Application) : AndroidViewModel(app) {
+    /**
+     * 在類定義中，LiveData為選定的 GarbageTruckProperty 屬性添加，以將該信息公開給詳細信息視圖。
+     * 按照通常的模式創建一個MutableLiveData來保存它GarbageTruckProperty本身，
+     * 然後公開一個不可變的公共LiveData屬性。
+     */
+    private val _selectedProperty = MutableLiveData<GarbageTruckProperty>()
+    val selectedProperty: LiveData<GarbageTruckProperty>
+    get() = _selectedProperty
+
+    //創建一個init {}塊並使用構造函數中的對象設置所選 GarbageTruckProperty 屬性的值。
+    init {
+        _selectedProperty.value = garbageTruckProperty
+    }
+}
+```
+3. 打開res/layout/fragment_garbate_truck_detail.xml，設計視圖畫面打並添加一個<data>元素來將詳細視圖模型與佈局相關聯。
+4. 將app:屬性添加到TextView元素。
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="viewModel"
+            type="com.example.retrofitroom_taipeigarbagetruck.ui.detail.GarbageTruckDetailViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.detail.GarbageTruckDetailFragment">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_Admin_District"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:text="@{viewModel.selectedProperty.admin_District}"
+                    tools:text="中山區" />
+
+                <TextView
+                    android:id="@+id/tv_Village"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:text="@{viewModel.selectedProperty.village}"
+                    tools:text="力行里" />
+
+                <TextView
+                    android:id="@+id/tv_Branch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:text="@{viewModel.selectedProperty.branch}"
+                    tools:text="長安分隊" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:orientation="horizontal"
+                android:visibility="invisible">
+
+                <TextView
+                    android:id="@+id/tv_latitude"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{viewModel.selectedProperty.latitude}"
+                    tools:text="25.05111111" />
+
+                <TextView
+                    android:id="@+id/tv_longitude"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{viewModel.selectedProperty.longitude}"
+                    tools:text="121.5369444" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="2dp">
+
+                <TextView
+                    android:id="@+id/textView3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/arrival_time"
+                    android:textColor="@color/gray" />
+
+                <TextView
+                    android:id="@+id/tv_Arrival_Time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{viewModel.selectedProperty.arrival_Time}"
+                    android:textColor="@color/green"
+                    android:textSize="16sp"
+                    tools:text="1630" />
+
+                <TextView
+                    android:id="@+id/textView5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/departure_time"
+                    android:textColor="@color/gray" />
+
+                <TextView
+                    android:id="@+id/tv_Departure_Time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{viewModel.selectedProperty.departure_Time}"
+                    android:textColor="@color/green"
+                    android:textSize="16sp"
+                    tools:text="1638" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="4dp">
+
+                <TextView
+                    android:id="@+id/tv_Location"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@{viewModel.selectedProperty.location}"
+                    android:textColor="@color/gray"
+                    tools:text="臺北市中山區建國北路一段69號前" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
+```
+## 第 2 步：在GarvageTruckViewModel中定義導航
+
+當用戶點擊GarvageTruckViewModel時，<br/>它應該觸發導航到一個片段，該片段顯示有關"單擊"項目的詳細信息。
+
+1. 打開ui/GarvageTruckViewModel.kt。 <br/> 添加一個_navigateToSelectedProperty MutableLiveData屬性並使用不可變的LiveData.
+```kotlin
+ // 當用戶點擊recyclerview時，它應該觸發導航到一個片段，該片段顯示有關單擊項目的詳細信息。
+    // LiveData to handle navigation to the selected property
+    private val _navigateToSelectedProperty = MutableLiveData<GarbageTruckProperty>()
+    val navigateToSelectedProperty: LiveData<GarbageTruckProperty>
+        get() = _navigateToSelectedProperty
+```
+2. 在類的末尾，添加一個displayPropertyDetails() <br/>將 _navigateToSelectedProperty設置為所選屬性的方法。
+```kotlin
+    /**
+     * When the property is clicked, set the [_navigateToSelectedProperty] [MutableLiveData]
+     * @param marsProperty The [GarbageTruckProperty] that was clicked on.
+     */
+    fun displayPropertyDetails(garbageTruckProperty: GarbageTruckProperty){
+        _navigateToSelectedProperty.value = garbageTruckProperty
+    }
+```
+3. 添加一個displayPropertyDetailsComplete() 將值歸零的方法_navigateToSelectedProperty。<br/>需要它來標記導航狀態完成，並避免在用戶從詳細信息視圖返回時再次觸發導航。
+```kotlin
+ /**
+     * After the navigation has taken place, make sure navigateToSelectedProperty is set to null
+     */
+    fun displayPropertyDetailsComplete() {
+        _navigateToSelectedProperty.value = null
+    }
+```
+ ## 第 3 步：在GarbageTruckAdapter 和片段中設置點擊偵聽器 
+  1. 打開GarbageTruckAdapter.kt。在類的末尾，創建一個自定義OnClickListener類，該類採用帶GarbageTruckProperty參數的 lambda 。在類中，定義一個onClick()設置為 lambda 參數的函數。
+  ```kotlin
+  /**
+     * Custom listener that handles clicks on [RecyclerView] items.  Passes the [GarbageTruckProperty]
+     * associated with the current item to the [onClick] function.
+     * @param clickListener lambda that will be called with the current [GarbageTruckProperty]
+     */
+    class OnClickListener(val clickListener: (garbageTruckProperty: GarbageTruckProperty) -> Unit){
+        fun onClick(garbageTruckProperty: GarbageTruckProperty) = clickListener(garbageTruckProperty)
+    }
+```
+ 2. 向上滾動到類定義GarbageTruckAdapter，並將私有OnClickListener屬性添加到構造函數。 
+ ```kotlin
+ class GarbageTruckAdapter (private val onClicklistener: OnClickListener): ListAdapter<GarbageTruckProperty
+        , GarbageTruckAdapter.GarbageTruckViewHolder>(DiffCallback) {
+```
+3. 通過向方法中onClickListener的添加 使可點擊onBindviewHolder()。在對調用之間定義點擊偵聽器getItem() and bind()。
+```kotlin
+ override fun onBindViewHolder(holder: GarbageTruckViewHolder, position: Int) {
+        val garbageTruckProperty = getItem(position)
+
+        holder.itemView.setOnClickListener {
+            onClicklistener.onClick(garbageTruckProperty)
+        }
+        holder.bind(garbageTruckProperty)
+    }
+```
+4. 打開GarbageTruckFragment.kt。在該onCreateView()方法中，將初始化binding.recycler.adapter屬性的行替換為如下所示的行。 
+```kotlin
+ // Sets the adapter of the recycler RecyclerView with clickHandler lambda that
+// tells the viewModel when our property is clicked
+    binding.recycler.adapter = GarbageTruckAdapter(GarbageTruckAdapter.OnClickListener{
+        viewModel.displayPropertyDetails(it)
+    })
+```
+## 第 4 步：修改導航圖並使 GarbageTruckProperty 可分塊
+當用戶點擊RecyclerView的單一Item時，應用程序應導航到詳細信息片段<br/>並傳遞所選 GarbageTruck 屬性的詳細信息，以便詳細信息視圖可以顯示該信息。
+
+現在你有一個點擊監聽器GaarbageTruckAdapter來處理點擊，以及一種從視圖模型觸發導航的方法。<br/>但是您還沒有將 GarbageTruckProperty對像傳遞給詳細信息片段。為此，您可以使用導航組件中的 Safe Args。
+
+1. 打開res/navigation/navigation.xml。單擊“文本”選項卡以查看導航圖的 XML 代碼。
+2. 在<fragment>細節片段的<argument>元素內，添加如下所示的元素。這個名為selectedProperty的參數具有類型 GarbageTuckProperty。
+
+```xml
+ <fragment
+        android:id="@+id/garbageTruckDetailFragment"
+        android:name="com.example.retrofitroom_taipeigarbagetruck.ui.detail.GarbageTruckDetailFragment"
+        android:label="fragment_garbage_truck_detail"
+        tools:layout="@layout/fragment_garbage_truck_detail" >
+
+        <argument
+            android:name="selectedProperty"
+            app:argType="com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckProperty"/>
+
+    </fragment>
+``` 
+ 3. 編譯應用程序。Navigation 給你一個錯誤，因為GarbateTruckProperty它不是Parcelable。<br/>
+ 該Parcelable接口使對象能夠被序列化，以便對象的數據可以在片段或活動之間傳遞。<br/>
+ 在這種情況下，要GarbageTruckProperty通過 Safe Args將對象內部的數據傳遞給詳細信息片段，GarbageTruckProperty必須實現該Parcelable接口。好消息是 Kotlin 為實現該接口提供了一個簡單的捷徑。 
+
+ 4. 打開GarbageTruckProperty.kt。將@Parcelize註釋添加到類定義中。請求時導入kotlinx.parcel.Parcelize。<br/>
+ 若無法import請到 build.grade(app) 加中上 plugins id 'kotlin-parcelize'<br/>
+```kotlin
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+/**
+ *  @Parcelize 序列化註解實際上就是幫我們自動生成了 writeToParcel() 和 createFromParcel()，
+ *  這一點可以節約我們的代碼量。需要在build.gradle加上插件  id 'kotlin-parcelize'
+ *  import kotlinx.parcelize.Parcelize
+ */
+@Parcelize
+data class GarbageTruckProperty(
+    val Admin_District: String,
+    .....
+) : Parcelable
+```
+## 第 5 步：連接片段 Connect the fragments
+仍然沒有導航——實際導航發生在片段中。在此步驟中，您添加用於在概覽和詳細信息片段之間實現導航的最後幾位。
+
+1. 打開ui/GarbageTruckFragment.kt。在onCreateView()中，在初始化GarbageTruckAdapter的行下方，添加如下所示的行以navigatedToSelectedProperty從概覽視圖模型中觀察。<br/>
+需導入androidx.lifecycle.Observer和 導入 androidx.navigation.fragment.findNavController。<br/>
+觀察者測試GarbagetruckProperty-it在 lambda 中 - 是否不為空，如果是，它從帶有findNavController().<br/> 
+調用displayPropertyDetailsComplete()以告訴視圖模型將 重置LiveData為空狀態，這樣當應用程序返回到GarbageTruckFragment.
+
+```kotlin
+  // Observe the navigateToSelectedProperty LiveData and Navigate when it isn't null
+        // After navigating, call displayPropertyDetailsComplete() so that the ViewModel is ready
+        // for another navigation event.
+        viewModel.navigateToSelectedProperty.observe(viewLifecycleOwner, Observer {
+            if (null != it){
+                this.findNavController().navigate(
+                    GarbageTruckFragmentDirections.actionToGarbageTruckDetailFragment(it))
+                viewModel.displayPropertyDetailsComplete()
+            }
+        })
+```
+2. 打開detail/GarbageTruckDetailFragment.kt。binding.lifecycleOwner 在onCreateView()方法中設置屬性的正下方添加此行。
+此行GarbageTruckProperty從 Safe Args 中獲取選定的對象。 
+
+>請注意 Kotlin 的非空斷言運算符 ( !!) 的使用。如果selectedProperty不存在，則發生了可怕的事情，您實際上希望代碼拋出一個空指針。（在生產代碼中，您應該以某種方式處理該錯誤。）  
+```kotlin
+// 此行從 GarbageTruckProperty Safe Args 中獲取選定的對象。
+ val garbageTruckProperty =
+ GarbageTruckDetailFragmentArgs.fromBundle(arguments!!).selectedProperty  
+ ```
+ 3. 接下來添加這一行，以獲得一個新的GarbageTruckDetailViewModelFactory.<br/> 
+ 您將使用GarbageTruckDetailViewModelFactory來獲取實例GarbageTruckDetailViewModel。<br/>入門應用程序包含實現GarbageTruckDetailViewModelFactory，因此您在這裡要做的就是初始化它。 
+ ```kotlin
+class GarbageTruckDetailViewModelFactory(
+    private val garbageTruckProperty: GarbageTruckProperty,
+    private val application: Application): ViewModelProvider.Factory {
+
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(GarbageTruckDetailViewModel::class.java)){
+            return GarbageTruckDetailViewModel(garbageTruckProperty, application) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+
+}
+ ```  
+ ```kotlin
+  val application = requireNotNull(activity).application
+
+  val viewModelFactory = GarbageTruckDetailViewModelFactory(garbageTruckProperty, application)
+``` 
+4. 最後，添加這條線以DetailViewModel從工廠獲得一個並連接所有部件。
+```kotlin
+ binding.viewModel =
+            ViewModelProvider(this, viewModelFactory).get(GarbageTruckDetailViewModel::class.java)
+```
+5. 編譯並運行該應用程序，然後點擊任何Recycler item。顯示該屬性的詳細信息的詳細信息片段。點擊返回按鈕返回概覽頁面。  
+---
+          

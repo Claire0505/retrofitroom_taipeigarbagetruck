@@ -5,6 +5,7 @@ plugins {
     id 'kotlin-kapt'
     // Safe Args插件都會生成一個相應的NavDirection類。這些類表示所有應用程序操作的導航。
     id("androidx.navigation.safeargs")
+    id 'kotlin-parcelize'
 }
 
 android {

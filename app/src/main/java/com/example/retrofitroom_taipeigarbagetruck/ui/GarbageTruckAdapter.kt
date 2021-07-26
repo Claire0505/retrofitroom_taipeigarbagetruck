@@ -12,7 +12,7 @@ import com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckProperty
  * This class implements a [RecyclerView] [ListAdapter] which uses Data Binding to present [List]
  * data, including computing diffs between lists.
  */
-class GarbageTruckAdapter : ListAdapter<GarbageTruckProperty
+class GarbageTruckAdapter (private val onClicklistener: OnClickListener): ListAdapter<GarbageTruckProperty
         , GarbageTruckAdapter.GarbageTruckViewHolder>(DiffCallback) {
 
     /**
@@ -56,6 +56,10 @@ class GarbageTruckAdapter : ListAdapter<GarbageTruckProperty
      */
     override fun onBindViewHolder(holder: GarbageTruckViewHolder, position: Int) {
         val garbageTruckProperty = getItem(position)
+
+        holder.itemView.setOnClickListener {
+            onClicklistener.onClick(garbageTruckProperty)
+        }
         holder.bind(garbageTruckProperty)
     }
 
@@ -80,6 +84,15 @@ class GarbageTruckAdapter : ListAdapter<GarbageTruckProperty
 
         }
     }
+    /**
+     * Custom listener that handles clicks on [RecyclerView] items.  Passes the [GarbageTruckProperty]
+     * associated with the current item to the [onClick] function.
+     * @param clickListener lambda that will be called with the current [GarbageTruckProperty]
+     */
+    class OnClickListener(val clickListener: (garbageTruckProperty: GarbageTruckProperty) -> Unit){
+        fun onClick(garbageTruckProperty: GarbageTruckProperty) = clickListener(garbageTruckProperty)
+    }
+
 
 }
 

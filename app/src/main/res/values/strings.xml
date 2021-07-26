@@ -1,7 +1,23 @@
 <resources>
-    <string name="app_name">RetrofitRoom_TaipeiGarbageTruck</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="app_name">TaipeiGarbageTruck</string>
+
     <string name="arrival_time">抵達時間：</string>
     <string name="departure_time">&#160;&#160;&#160;離開時間：</string>
+
+    <string-array name="admin_District">
+        <item>中正區</item>
+        <item>大同區</item>
+        <item>中山區</item>
+        <item>松山區</item>
+        <item>大安區</item>
+        <item>萬華區</item>
+        <item>信義區</item>
+        <item>士林區</item>
+        <item>北投區</item>
+        <item>內湖區</item>
+        <item>南港區</item>
+        <item>文山區</item>
+    </string-array>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

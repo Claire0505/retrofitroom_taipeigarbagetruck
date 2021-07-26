@@ -36,6 +36,12 @@ class GarbageTruckViewModel : ViewModel() {
         getGarbageTruckProperties()
     }
 
+    // 當用戶點擊recyclerview時，它應該觸發導航到一個片段，該片段顯示有關單擊項目的詳細信息。
+    // LiveData to handle navigation to the selected property
+    private val _navigateToSelectedProperty = MutableLiveData<GarbageTruckProperty>()
+    val navigateToSelectedProperty: LiveData<GarbageTruckProperty>
+        get() = _navigateToSelectedProperty
+
     /**
      * Sets the value of the status LiveData to the Garbage Truck API status.
      */
@@ -53,4 +59,20 @@ class GarbageTruckViewModel : ViewModel() {
             }
         }
     }
+
+    /**
+     * When the property is clicked, set the [_navigateToSelectedProperty] [MutableLiveData]
+     * @param marsProperty The [GarbageTruckProperty] that was clicked on.
+     */
+    fun displayPropertyDetails(garbageTruckProperty: GarbageTruckProperty){
+        _navigateToSelectedProperty.value = garbageTruckProperty
+    }
+
+    /**
+     * After the navigation has taken place, make sure navigateToSelectedProperty is set to null
+     */
+    fun displayPropertyDetailsComplete() {
+        _navigateToSelectedProperty.value = null
+    }
+
 }

@@ -9,5 +9,20 @@
         android:id="@+id/garbageTruckFragment"
         android:name="com.example.retrofitroom_taipeigarbagetruck.ui.GarbageTruckFragment"
         android:label="fragment_garbage_truck"
-        tools:layout="@layout/fragment_garbage_truck" />
+        tools:layout="@layout/fragment_garbage_truck" >
+        <action
+            android:id="@+id/action_to_garbageTruckDetailFragment"
+            app:destination="@id/garbageTruckDetailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/garbageTruckDetailFragment"
+        android:name="com.example.retrofitroom_taipeigarbagetruck.ui.detail.GarbageTruckDetailFragment"
+        android:label="fragment_garbage_truck_detail"
+        tools:layout="@layout/fragment_garbage_truck_detail" >
+
+        <argument
+            android:name="selectedProperty"
+            app:argType="com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckProperty"/>
+
+    </fragment>
 </navigation>
