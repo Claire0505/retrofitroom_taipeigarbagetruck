@@ -4,9 +4,9 @@ import android.view.View
 import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckProperty
+import com.example.retrofitroom_taipeigarbagetruck.domain.GarbageTruckProperty
 import com.example.retrofitroom_taipeigarbagetruck.ui.GarbageTruckAdapter
-import com.example.retrofitroom_taipeigarbagetruck.ui.GarbageTruckApiStatus
+import com.example.retrofitroom_taipeigarbagetruck.viewmodels.GarbageTruckApiStatus
 
 /**
  * 在bindRecyclerView()函數內部，強制轉換recyclerView.adapter為GarbageTruckAdapter，

@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.retrofitroom_taipeigarbagetruck.databinding.GarbageTruckItemBinding
-import com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckProperty
+import com.example.retrofitroom_taipeigarbagetruck.domain.GarbageTruckProperty
 
 /**
  * This class implements a [RecyclerView] [ListAdapter] which uses Data Binding to present [List]

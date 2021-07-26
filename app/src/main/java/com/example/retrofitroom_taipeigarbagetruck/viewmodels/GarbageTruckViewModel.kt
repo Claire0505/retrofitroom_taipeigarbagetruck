@@ -1,15 +1,13 @@
-package com.example.retrofitroom_taipeigarbagetruck.ui
+package com.example.retrofitroom_taipeigarbagetruck.viewmodels
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckApi
-import com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckProperty
+import com.example.retrofitroom_taipeigarbagetruck.domain.GarbageTruckProperty
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import okio.ByteString.Companion.toByteString
 
 // 在視圖模型中創建一個來表示 Web 請求的狀態。需要考慮三種狀態——加載、成功和失敗。
 enum class GarbageTruckApiStatus { LOADING, ERROR, DONE}

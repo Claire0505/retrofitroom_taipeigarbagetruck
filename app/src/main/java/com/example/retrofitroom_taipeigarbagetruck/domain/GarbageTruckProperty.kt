@@ -1,4 +1,4 @@
-package com.example.retrofitroom_taipeigarbagetruck.network
+package com.example.retrofitroom_taipeigarbagetruck.domain
 
 
 import android.os.Parcelable

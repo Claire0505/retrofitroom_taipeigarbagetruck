@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import com.example.retrofitroom_taipeigarbagetruck.R
 import com.example.retrofitroom_taipeigarbagetruck.databinding.FragmentGarbageTruckBinding
+import com.example.retrofitroom_taipeigarbagetruck.viewmodels.GarbageTruckViewModel
 
 class GarbageTruckFragment : Fragment() {
 

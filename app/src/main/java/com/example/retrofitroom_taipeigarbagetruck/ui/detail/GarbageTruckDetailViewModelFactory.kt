@@ -3,7 +3,7 @@ package com.example.retrofitroom_taipeigarbagetruck.ui.detail
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckProperty
+import com.example.retrofitroom_taipeigarbagetruck.domain.GarbageTruckProperty
 
 class GarbageTruckDetailViewModelFactory(
     private val garbageTruckProperty: GarbageTruckProperty,

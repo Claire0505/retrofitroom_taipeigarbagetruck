@@ -6,7 +6,7 @@
     <data>
         <variable
             name="garbageTruckProperty"
-            type="com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckProperty" />
+            type="com.example.retrofitroom_taipeigarbagetruck.domain.GarbageTruckProperty" />
     </data>
 
     <FrameLayout

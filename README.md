@@ -850,7 +850,7 @@ fun bindRecyclerView(recyclerView: RecyclerView, data: List<GarbageTruckProperty
 1. 打開BindingAdapters.kt。添加一個名為的新綁定適配器bindStatus()，它將一個ImageView和一個GarbageTruckApiStatus值作為參數。
 2. when {}在bindStatus()方法內部添加一個在不同狀態之間切換的方法。
 
-3. 在when {}中，為加載狀態 (MarsApiStatus.LOADING)添加一個案例。<br/>對於此狀態，將設置ImageView為可見，並為其分配加載動畫。
+3. 在when {}中，為加載狀態 (GarbageTruckApiStatus.LOADING)添加一個案例。<br/>對於此狀態，將設置ImageView為可見，並為其分配加載動畫。
 
 4. 為錯誤狀態添加一個案例，即GarbageTruckApiStatus.ERROR。<br/>
 與您為LOADING狀態所做的類似，將狀態設置ImageView為可見並重用連接錯誤可繪製對象。
@@ -1224,4 +1224,166 @@ class GarbageTruckDetailViewModelFactory(
 ```
 5. 編譯並運行該應用程序，然後點擊任何Recycler item。顯示該屬性的詳細信息的詳細信息片段。點擊返回按鈕返回概覽頁面。  
 ---
-          
+<br/>
+<br/>
+
+# Android Kotlin 基礎：存儲庫 Repository
+
+將通過使用離線緩存來改善應用的用戶體驗。許多應用程序依賴於來自網絡的數據。如果您的應用程序在每次啟動時從服務器獲取數據，用戶可能會看到加載屏幕，這可能是一種糟糕的用戶體驗。用戶可能會卸載您的應用。
+
+當用戶啟動應用程序時，他們希望應用程序能夠快速顯示數據。您可以通過實施離線緩存來實現此目標。離線緩存意味著您的應用程序將從網絡獲取的數據保存在設備的本地存儲上，以便更快地訪問。
+
+許多用戶間歇性地訪問互聯網。通過實施離線緩存，您可以為您的應用添加離線支持，幫助這些用戶在離線時使用您的應用。
+
+## 第 1 步：調整 package 的位置
+1. 將原本在 network/GarbageTruckProperty，移轉到新建的package
+domain/GarbageTruckProperty.kt
+
+2. 將原本在 ui/GarbageTruckViewModel，移轉到新建的package
+viewmodels/GarbageTruckViewModel
+---
+
+# 添加離線緩存 Add an offline cache
+## 第 1 步：添加 Room 依賴項
+1. 打開build.gradle (Module:app)文件並將Room依賴項添加到項目中。
+```kotlin
+// Room Database dependency
+    def room_version = "2.3.0"
+    implementation "androidx.room:room-runtime:$room_version"
+    // Kotlin Extensions and Coroutines support for Room
+    implementation "androidx.room:room-ktx:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+```
+## 第 2 步：添加數據庫對象
+在此步驟中，您將創建一個命名為 DatabaseGarbageTruck 表示數據庫對象的數據庫實體。<br/>
+還可以實現將DatabaseGarbageTruck對象轉換為(domain)域對像以及將網絡對象轉換為DatabaseGarbageTruck對象的便捷方法。
+
+1. 創建database/DatabaseEntities.kt並創建一個Room名為的實體DatabaseGarbageTruck。
+```kotlin
+/**
+ * Database entities go in this file. These are responsible for reading and writing from the
+ * database.
+ */
+@Entity
+data class DatabaseGarbageTruck constructor(
+    @PrimaryKey
+    val Admin_District: String,
+    val Bra_num: String,
+    val Branch: String,
+    val Car_num: String,
+    val Arrival_Time: String,
+    val Departure_Time: String,
+    val Location: String,
+    val Latitude: String,
+    val Longitude: String,
+    val Route: String,
+    val Train_num: String,
+    val Village: String
+)
+```
+2. 在database/DatabaseEntities.kt中，創建一個名為asDomainModel() 的擴展函數。使用該函數將DatabaseGarbageTruck數據庫對象轉換為域對象。
+```kotlin
+/**
+ * Map DatabaseVideos to domain entities
+ * 創建一個名為asDomainModel() 的擴展函數。使用該函數將 DatabaseGarbageTruck 數據庫對象轉換為domain域對象。
+ */
+fun List<DatabaseGarbageTruck>.asDomainModel() : List<GarbageTruckProperty>{
+    return  map {
+        GarbageTruckProperty(
+            Admin_District = it.Admin_District,
+            Bra_num = it.Bra_num,
+            Branch = it.Branch,
+            Car_num = it.Car_num,
+            Arrival_Time = it.Arrival_Time,
+            Departure_Time = it.Departure_Time,
+            Location = it.Location,
+            Latitude = it.Latitude,
+            Longitude = it.Longitude,
+            Route = it.Route,
+            Train_num = it.Train_num,
+            Village = it.Village
+        )
+    }
+}
+```
+在這個應用程序中，轉換很簡單，其中一些代碼不是必需的。但在實際應用中( domain, database, and network objects )，域、數據庫和網絡對象的結構會有所不同。
+
+3. 創建 network/DataTransferObjects.kt並創建一個名為asDatabaseModel(). 使用該函數將網絡對象轉換為DatabaseGarbateTruck數據庫對象。
+```kotlin
+fun NetworkGarbageTruckContainer.asDatabaseModel(): List<DatabaseGarbageTruck> {
+    return garbageTrucks.map {
+        DatabaseGarbageTruck(
+            Admin_District = it.Admin_District,
+            Bra_num = it.Bra_num,
+            Branch = it.Branch,
+            Car_num = it.Car_num,
+            Arrival_Time = it.Arrival_Time,
+            Departure_Time = it.Departure_Time,
+            Location = it.Location,
+            Latitude = it.Latitude,
+            Longitude = it.Longitude,
+            Route = it.Route,
+            Train_num = it.Train_num,
+            Village = it.Village
+        )
+    }
+}
+```
+## 第 3 步：添加 GarbageTruckDao
+在此步驟中，將實現GarbageTruckDao並定義兩個幫助程序方法來訪問數據庫。一種輔助方法從數據庫中獲取資料，另一種方法插入數據庫。
+1. 創建 database/Room.kt，定義一個GarbageTruckDao接口並用 進行註釋@Dao。
+```kotlin
+@Dao
+interface GarbageTruckDao {
+    // 創建一個調用方法getGarbageTruck以從數據庫中獲取所有資料。
+    // 將此方法的返回類型更改為LiveData，這樣每當數據庫中的數據發生變化時，UI 中顯示的數據就會刷新。
+    @Query("select * from databasegarbagetruck")
+    fun getGarbageTruck(): LiveData<DatabaseGarbageTruck>
+
+    // 在界面內，定義另一種insertAll()方法以將從網絡獲取的資料插入到數據庫中。
+    // 如果已存在於數據庫中，則覆蓋數據庫條目。為此，請使用onConflict參數將衝突策略設置為REPLACE。
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertAll( garbageTrucks: List<DatabaseGarbageTruck>)
+
+}
+```
+>CRUD 增刪查改都是透過這個介面來完成，
+@Insert(onConflict = OnConflictStrategy.REPLACE) 表示新增物件時和舊物件發生衝突後的處置：<br/>
+REPLACE 蓋掉 (最常用)<br/>
+ROLLBACK 閃退<br/>
+ABORT 閃退 (默認)<br/>
+FAIL 閃退<br/>
+IGNORE 忽略，還是舊的資料<br/>
+
+## 第 4 步：實施 RoomDatabase
+1. 在database/Room.kt中，interface GarbageTruckDao之後，創建一個abstract名為GarbageTrucksDatabase 的類 。擴展GarbageTrucksDatabase的RoomDatabase。
+2. 在GarbageTrucksDatabase裡面，定義一個類型的變量garbageTruckDao來訪問Dao方法。
+```kotlin
+// 使用@Database註釋將GarbageTrucksDatabase類標記為Room數據庫。
+// 聲明DatabaseGarbageTruck屬於該數據庫的實體，並將版本號設置為1。
+@Database(entities = [DatabaseGarbageTruck::class] , version = 1)
+abstract class GarbageTrucksDatabase: RoomDatabase(){
+    abstract val garbageTruckDao: GarbageTruckDao
+}
+```
+4. 創建一個在類外部private lateinit調用的變量INSTANCE，以保存單例對象。該GarbageTruckDatabase應 singleton，防止發生在同一時間打開數據庫的多個實例。
+
+5. getDatabase()在類之外創建和定義一個方法。在 中getDatabase()，初始化並返回塊INSTANCE內的變量synchronized。
+
+```kotlin
+
+private lateinit var INSTANCE: GarbageTrucksDatabase
+
+// getDatabase()在類之外創建和定義一個方法。
+// 在getDatabase()中，初始化並返回塊INSTANCE內的變量synchronized (同步)。
+fun getDatabase(context: Context) : GarbageTrucksDatabase {
+    synchronized(GarbageTrucksDatabase::class.java) {
+        if (!::INSTANCE.isInitialized){
+            INSTANCE = Room.databaseBuilder(context.applicationContext,
+            GarbageTrucksDatabase::class.java,
+            "garbageTrucks").build()
+        }
+    }
+    return INSTANCE
+}
+```

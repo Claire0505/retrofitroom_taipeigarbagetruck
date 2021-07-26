@@ -9,7 +9,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.example.retrofitroom_taipeigarbagetruck.ui.GarbageTruckViewModel" />
+            type="com.example.retrofitroom_taipeigarbagetruck.viewmodels.GarbageTruckViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

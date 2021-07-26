@@ -22,7 +22,7 @@
 
         <argument
             android:name="selectedProperty"
-            app:argType="com.example.retrofitroom_taipeigarbagetruck.network.GarbageTruckProperty"/>
+            app:argType="com.example.retrofitroom_taipeigarbagetruck.domain.GarbageTruckProperty"/>
 
     </fragment>
 </navigation>
